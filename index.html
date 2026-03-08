@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Where Am I?</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    main {
+      text-align: center;
+      max-width: 360px;
+    }
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 2rem;
+      color: #f8fafc;
+    }
+    button {
+      font-size: 1rem;
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: transform 0.1s, box-shadow 0.1s;
+    }
+    button:active {
+      transform: scale(0.98);
+    }
+    #getLocation {
+      background: #3b82f6;
+      color: white;
+      box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+    }
+    #getLocation:hover {
+      background: #2563eb;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.5);
+    }
+    #getLocation:disabled {
+      background: #64748b;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+    #coordsBox {
+      margin-top: 1.5rem;
+      padding: 1rem 1.25rem;
+      background: #1e293b;
+      border-radius: 8px;
+      border: 1px solid #334155;
+      display: none;
+    }
+    #coordsBox.visible {
+      display: block;
+    }
+    #coords {
+      font-family: ui-monospace, monospace;
+      font-size: 0.95rem;
+      word-break: break-all;
+      margin-bottom: 0.75rem;
+      color: #94a3b8;
+    }
+    #copyBtn {
+      background: #334155;
+      color: #e2e8f0;
+    }
+    #copyBtn:hover {
+      background: #475569;
+    }
+    #copyBtn.copied {
+      background: #22c55e;
+      color: white;
+    }
+    #message {
+      margin-top: 1rem;
+      font-size: 0.875rem;
+      color: #94a3b8;
+      min-height: 1.25rem;
+    }
+    #message.error {
+      color: #f87171;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Where Am I?</h1>
+    <button id="getLocation" type="button">Get my location</button>
+    <div id="coordsBox">
+      <div id="coords"></div>
+      <button id="copyBtn" type="button">Copy</button>
+    </div>
+    <p id="message" role="status"></p>
+  </main>
+  <script>
+    const getLocationBtn = document.getElementById('getLocation');
+    const coordsBox = document.getElementById('coordsBox');
+    const coordsEl = document.getElementById('coords');
+    const copyBtn = document.getElementById('copyBtn');
+    const messageEl = document.getElementById('message');
+
+    function setMessage(text, isError = false) {
+      messageEl.textContent = text;
+      messageEl.classList.toggle('error', isError);
+    }
+
+    function showCoords(lat, lon) {
+      coordsEl.textContent = `${lat}, ${lon}`;
+      coordsBox.classList.add('visible');
+      coordsBox.dataset.lat = lat;
+      coordsBox.dataset.lon = lon;
+      setMessage('');
+    }
+
+    getLocationBtn.addEventListener('click', () => {
+      if (!navigator.geolocation) {
+        setMessage('Geolocation is not supported by your browser.', true);
+        return;
+      }
+      setMessage('Getting location…');
+      getLocationBtn.disabled = true;
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
+          showCoords(lat, lon);
+          getLocationBtn.disabled = false;
+        },
+        (err) => {
+          const messages = {
+            PERMISSION_DENIED: 'Location permission denied.',
+            POSITION_UNAVAILABLE: 'Location unavailable.',
+            TIMEOUT: 'Request timed out.',
+          };
+          setMessage(messages[err.code] || 'Could not get location.', true);
+          getLocationBtn.disabled = false;
+        }
+      );
+    });
+
+    copyBtn.addEventListener('click', () => {
+      const lat = coordsBox.dataset.lat;
+      const lon = coordsBox.dataset.lon;
+      if (lat == null || lon == null) return;
+      const text = `${lat}, ${lon}`;
+      navigator.clipboard.writeText(text).then(() => {
+        copyBtn.textContent = 'Copied!';
+        copyBtn.classList.add('copied');
+        setTimeout(() => {
+          copyBtn.textContent = 'Copy';
+          copyBtn.classList.remove('copied');
+        }, 2000);
+      });
+    });
+  </script>
+</body>
+</html>
