@@ -42,3 +42,7 @@ App listens on port 80 inside the container. No host port is published—attach 
 6. Click **Deploy the stack**.
 
 Put the stack on the same Docker network as your reverse proxy and route your chosen host/subdomain to the `web` service (port 80). Use HTTPS so geolocation works in the browser.
+
+### With Nginx Proxy Manager
+
+Use NPM as the reverse proxy (this app stays a plain origin). In Portainer, attach this stack to the **same network** as your Nginx Proxy Manager container. In NPM, add a Proxy Host: set the forward hostname to this stack’s `web` service (e.g. `easygoin-where-am-i-web` or the stack name + `-web`), port `80`. Enable SSL in NPM so the site is served over HTTPS for geolocation.
