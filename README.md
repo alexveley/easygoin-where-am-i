@@ -29,7 +29,7 @@ Build and run with Docker Compose:
 docker compose up -d --build
 ```
 
-App is served on port **8080** (map to 80 in `docker-compose.yml` if you prefer).
+App listens on port 80 inside the container. No host port is published—attach a reverse proxy (e.g. Traefik, Caddy, Nginx Proxy Manager) to the stack’s network and route to the `web` service.
 
 ### Deploy as a stack in Portainer
 
@@ -41,4 +41,4 @@ App is served on port **8080** (map to 80 in `docker-compose.yml` if you prefer)
 5. Set **Compose path** to `docker-compose.yml` (or leave default if it picks it up).
 6. Click **Deploy the stack**.
 
-Ensure the host has port 8080 free (or change `ports` in `docker-compose.yml`). For HTTPS and geolocation to work, put a reverse proxy (e.g. Traefik, Caddy, Nginx Proxy Manager) in front and serve the app over HTTPS.
+Put the stack on the same Docker network as your reverse proxy and route your chosen host/subdomain to the `web` service (port 80). Use HTTPS so geolocation works in the browser.
