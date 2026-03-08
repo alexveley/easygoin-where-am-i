@@ -126,12 +126,28 @@
       setMessage('');
     }
 
+    // Geolocation options: work across desktop and mobile browsers
+    // enableHighAccuracy: true = use GPS on mobile (triggers proper permission prompt)
+    // timeout: allow time for cold GPS lock on phones
+    // maximumAge: 0 = always get a fresh position
+    var geoOptions = {
+      enableHighAccuracy: true,
+      timeout: 30000,
+      maximumAge: 0
+    };
+
     getLocationBtn.addEventListener('click', () => {
       if (!navigator.geolocation) {
         setMessage('Geolocation is not supported by your browser.', true);
         return;
       }
-      setMessage('Getting location…');
+
+      if (!window.isSecureContext) {
+        setMessage('This page must be loaded over HTTPS to use location.', true);
+        return;
+      }
+
+      setMessage('Getting location… Allow when your browser asks.');
       getLocationBtn.disabled = true;
 
       navigator.geolocation.getCurrentPosition(
@@ -142,14 +158,17 @@
           getLocationBtn.disabled = false;
         },
         (err) => {
-          const messages = {
-            PERMISSION_DENIED: 'Location permission denied.',
-            POSITION_UNAVAILABLE: 'Location unavailable.',
-            TIMEOUT: 'Request timed out.',
+          var code = err && err.code;
+          var messages = {
+            1: 'Location permission denied or blocked in browser settings.',
+            2: 'Location unavailable. Check that GPS/location is on for this device.',
+            3: 'Location request timed out. Try again with a clear view of the sky.'
           };
-          setMessage(messages[err.code] || 'Could not get location.', true);
+          var msg = messages[code] || 'Could not get location. Try again or check site permissions.';
+          setMessage(msg, true);
           getLocationBtn.disabled = false;
-        }
+        },
+        geoOptions
       );
     });
 
